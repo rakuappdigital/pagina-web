@@ -7,12 +7,13 @@ interface PassageCardProps {
   text: string;
   title: string;
   author: string;
+  year?: string;
   category: string;
   loading?: boolean;
 }
 
 const PassageCard = forwardRef<HTMLDivElement, PassageCardProps>(
-  ({ text, title, author, category, loading }, ref) => {
+  ({ text, title, author, year, category, loading }, ref) => {
     const categoryLabel =
       CATEGORY_LABELS[category as Category] ?? category;
 
@@ -45,7 +46,14 @@ const PassageCard = forwardRef<HTMLDivElement, PassageCardProps>(
           <p className="text-[#6B5B3E] font-semibold text-sm tracking-wide">
             {author}
           </p>
-          <p className="text-[#9E8B70] text-xs mt-1 italic">{title}</p>
+          <div className="flex items-baseline gap-3 mt-1">
+            <p className="text-[#9E8B70] text-xs italic">{title}</p>
+            {year && (
+              <span className="text-[#C9A96E] text-xs tracking-widest" style={{ fontFamily: "var(--font-lato)" }}>
+                {year}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     );

@@ -2,6 +2,7 @@ export interface Passage {
   text: string;
   title: string;
   author: string;
+  year?: string;
   category: string;
 }
 

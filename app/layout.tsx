@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { EB_Garamond, Lato } from "next/font/google";
+import { Lora, Lato } from "next/font/google";
 import "./globals.css";
 
-const ebGaramond = EB_Garamond({
+const ebGaramond = Lora({
   variable: "--font-eb-garamond",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
 });
 

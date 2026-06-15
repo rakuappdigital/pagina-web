@@ -36,45 +36,55 @@ function drawAppStoreBadge(
   w: number,
   h: number
 ) {
-  // Badge background
   drawRoundedRect(ctx, x, y, w, h, 18);
   ctx.fillStyle = "#1A1A1A";
   ctx.fill();
 
-  // Apple logo (simplified path, scaled to fit)
   const aX = x + 22;
   const aY = y + h / 2 - 18;
   ctx.fillStyle = "white";
-  ctx.font = `bold ${h * 0.7}px Arial`;
-  ctx.textAlign = "left";
-  ctx.fillText("", aX, aY + h * 0.55); // Apple  symbol
-
-  // Fallback: draw simple apple shape
   ctx.beginPath();
-  // Apple body
   ctx.ellipse(aX + 14, aY + 14, 11, 13, 0, 0, Math.PI * 2);
   ctx.fill();
-  // Bite
   ctx.fillStyle = "#1A1A1A";
   ctx.beginPath();
   ctx.ellipse(aX + 20, aY + 10, 7, 8, 0.4, 0, Math.PI * 2);
   ctx.fill();
-  // Leaf
   ctx.fillStyle = "white";
   ctx.beginPath();
   ctx.ellipse(aX + 17, aY + 3, 4, 6, -0.5, 0, Math.PI * 2);
   ctx.fill();
 
-  // "Download on the" text
   ctx.fillStyle = "rgba(255,255,255,0.8)";
   ctx.font = `${h * 0.22}px Arial`;
   ctx.textAlign = "left";
   ctx.fillText("Download on the", x + 52, y + h * 0.38);
 
-  // "App Store" text
   ctx.fillStyle = "white";
   ctx.font = `600 ${h * 0.38}px Arial`;
   ctx.fillText("App Store", x + 52, y + h * 0.72);
+}
+
+/** Metni canvas genişliğine göre satırlara böler */
+function wrapText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number
+): string[] {
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const test = line + word + " ";
+    if (ctx.measureText(test).width > maxWidth && line.length > 0) {
+      lines.push(line.trim());
+      line = word + " ";
+    } else {
+      line = test;
+    }
+  }
+  if (line.trim()) lines.push(line.trim());
+  return lines;
 }
 
 export default function ShareButton({ text, title, author }: ShareButtonProps) {
@@ -83,6 +93,9 @@ export default function ShareButton({ text, title, author }: ShareButtonProps) {
   async function handleShare() {
     setGenerating(true);
     try {
+      // Fontun yüklenmesini bekle
+      await document.fonts.ready;
+
       const canvas = document.createElement("canvas");
       const scale = 2;
       canvas.width = 1080 * scale;
@@ -96,18 +109,24 @@ export default function ShareButton({ text, title, author }: ShareButtonProps) {
       const W = 1080;
       const H = 1920;
 
-      // Background
+      // Sabit alan sınırları
+      const TEXT_TOP = 300;       // metnin başlayabileceği en erken nokta
+      const BOTTOM_RESERVED = 420; // yazar + branding + badge için alt alan
+      const TEXT_BOTTOM = H - BOTTOM_RESERVED;
+      const TEXT_AREA_H = TEXT_BOTTOM - TEXT_TOP;
+      const MAX_WIDTH = W - 160;
+
+      // Arka plan
       ctx.fillStyle = "#FAF7F2";
       ctx.fillRect(0, 0, W, H);
 
-      // Subtle gradient overlay
       const grad = ctx.createLinearGradient(0, 0, W, H);
       grad.addColorStop(0, "rgba(201,169,110,0.04)");
       grad.addColorStop(1, "rgba(107,91,62,0.07)");
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
 
-      // Top decorative line
+      // Üst dekoratif çizgi
       ctx.strokeStyle = "#C9A96E";
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -115,83 +134,76 @@ export default function ShareButton({ text, title, author }: ShareButtonProps) {
       ctx.lineTo(W - 80, 130);
       ctx.stroke();
 
-      // Bottom decorative line
+      // Alt dekoratif çizgi
       ctx.beginPath();
-      ctx.moveTo(80, H - 200);
-      ctx.lineTo(W - 80, H - 200);
+      ctx.moveTo(80, H - BOTTOM_RESERVED + 20);
+      ctx.lineTo(W - 80, H - BOTTOM_RESERVED + 20);
       ctx.stroke();
 
-      // Big decorative quote mark
+      // Büyük tırnak işareti (dekoratif)
       ctx.font = "bold 280px Georgia, serif";
       ctx.fillStyle = "rgba(201,169,110,0.12)";
       ctx.textAlign = "left";
       ctx.fillText("“", 60, 420);
 
-      // Passage text (word wrap, EB Garamond italic style)
-      ctx.font = "italic 54px 'EB Garamond', Georgia, serif";
-      ctx.fillStyle = "#2C2416";
-      const words = text.split(" ");
-      const maxWidth = W - 160;
-      let line = "";
-      const lines: string[] = [];
-      for (const word of words) {
-        const testLine = line + word + " ";
-        if (ctx.measureText(testLine).width > maxWidth && line.length > 0) {
-          lines.push(line.trim());
-          line = word + " ";
-        } else {
-          line = testLine;
-        }
+      // --- Otomatik font boyutu: metni TEXT_AREA_H'ye sığdır ---
+      let fontSize = 54;
+      let lineHeight = Math.round(fontSize * 1.52);
+      let lines: string[] = [];
+
+      while (fontSize >= 28) {
+        ctx.font = `italic ${fontSize}px 'Lora', 'EB Garamond', Georgia, serif`;
+        lines = wrapText(ctx, text, MAX_WIDTH);
+        const totalH = lines.length * lineHeight;
+        if (totalH <= TEXT_AREA_H) break;
+        fontSize -= 2;
+        lineHeight = Math.round(fontSize * 1.52);
       }
-      if (line.trim()) lines.push(line.trim());
 
-      const lineHeight = 82;
+      // Metni dikey olarak TEXT_AREA içinde ortala
       const totalTextHeight = lines.length * lineHeight;
-      const startY = (H - totalTextHeight) / 2 - 80;
+      const startY = TEXT_TOP + (TEXT_AREA_H - totalTextHeight) / 2 + fontSize;
 
+      ctx.font = `italic ${fontSize}px 'Lora', 'EB Garamond', Georgia, serif`;
+      ctx.fillStyle = "#2C2416";
+      ctx.textAlign = "left";
       lines.forEach((l, i) => {
         ctx.fillText(l, 80, startY + i * lineHeight);
       });
 
-      // Thin divider after text
-      const dividerY = startY + totalTextHeight + 70;
+      // Yazar bilgisi
+      const authorY = H - BOTTOM_RESERVED + 80;
       ctx.strokeStyle = "#D4C4A8";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(80, dividerY);
-      ctx.lineTo(300, dividerY);
+      ctx.moveTo(80, authorY - 30);
+      ctx.lineTo(280, authorY - 30);
       ctx.stroke();
 
-      // Author name
       ctx.font = "600 42px Georgia, serif";
       ctx.fillStyle = "#6B5B3E";
       ctx.textAlign = "left";
-      ctx.fillText(author, 80, dividerY + 60);
+      ctx.fillText(author, 80, authorY + 10);
 
-      // Book title
       ctx.font = "italic 36px Georgia, serif";
       ctx.fillStyle = "#9E8B70";
-      ctx.fillText(title, 80, dividerY + 108);
+      ctx.fillText(title, 80, authorY + 58);
 
       // Pagina branding
       ctx.font = "300 32px Georgia, serif";
       ctx.fillStyle = "#C9A96E";
       ctx.textAlign = "center";
-      ctx.letterSpacing = "8px";
-      ctx.fillText("P A G I N A", W / 2, H - 280);
+      ctx.fillText("P A G I N A", W / 2, H - 220);
 
-      // "Yakında App Store'da" label
       ctx.font = "300 24px Arial, sans-serif";
       ctx.fillStyle = "#9E8B70";
       ctx.textAlign = "center";
-      ctx.fillText("Yakında App Store'da!", W / 2, H - 238);
+      ctx.fillText("Yakında App Store’da!", W / 2, H - 178);
 
-      // App Store badge
       const badgeW = 280;
       const badgeH = 80;
-      drawAppStoreBadge(ctx, W / 2 - badgeW / 2, H - 200, badgeW, badgeH);
+      drawAppStoreBadge(ctx, W / 2 - badgeW / 2, H - 158, badgeW, badgeH);
 
-      // Download
       const link = document.createElement("a");
       link.download = `pagina-${author.replace(/\s+/g, "-").toLowerCase()}.png`;
       link.href = canvas.toDataURL("image/png");

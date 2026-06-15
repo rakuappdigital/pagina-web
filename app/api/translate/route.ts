@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 
-const client = new Anthropic();
+let _client: Anthropic | null = null;
+function getClient() {
+  if (!_client) _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  return _client;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,7 +19,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Metin çok uzun" }, { status: 400 });
     }
 
-    const response = await client.messages.create({
+    const response = await getClient().messages.create({
       model: "claude-haiku-4-5",
       max_tokens: 1024,
       messages: [

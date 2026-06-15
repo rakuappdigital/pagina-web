@@ -2,19 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRandomBook, Category } from "@/data/books";
 import { getPassageFromGutenberg, Passage } from "@/lib/gutenberg";
 import { getPassageFromWikisource } from "@/lib/wikisource";
+import translatedPool from "@/data/translated-passages.json";
 
-// Statik çevrilmiş pasajlar (scripts/generate-translations.mjs ile üretildi)
-let translatedPassages: Passage[] | null = null;
 function getTranslated(): Passage[] {
-  if (!translatedPassages) {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      translatedPassages = require("@/data/translated-passages.json");
-    } catch {
-      translatedPassages = [];
-    }
-  }
-  return translatedPassages ?? [];
+  return translatedPool as Passage[];
 }
 
 export async function GET(req: NextRequest) {

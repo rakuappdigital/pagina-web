@@ -8,6 +8,7 @@ interface WikisourceWork {
 
 // Türkçe Wikisource'da mevcut olan telif hakkı serbest eserler
 const TURKISH_WORKS: WikisourceWork[] = [
+  // Ömer Seyfettin (1884–1920)
   { page: "Kaşağı", title: "Kaşağı", author: "Ömer Seyfettin" },
   { page: "Yüksek_Ökçeler", title: "Yüksek Ökçeler", author: "Ömer Seyfettin" },
   { page: "Bomba", title: "Bomba", author: "Ömer Seyfettin" },
@@ -18,6 +19,14 @@ const TURKISH_WORKS: WikisourceWork[] = [
   { page: "Falaka", title: "Falaka", author: "Ömer Seyfettin" },
   { page: "Ant", title: "Ant", author: "Ömer Seyfettin" },
   { page: "Başını_Vermeyen_Şehit", title: "Başını Vermeyen Şehit", author: "Ömer Seyfettin" },
+  { page: "Pembe_İncili_Kaftan", title: "Pembe İncili Kaftan", author: "Ömer Seyfettin" },
+  { page: "Diyet", title: "Diyet", author: "Ömer Seyfettin" },
+  { page: "Teselli", title: "Teselli", author: "Ömer Seyfettin" },
+  { page: "Perili_Köşk", title: "Perili Köşk", author: "Ömer Seyfettin" },
+  // Namık Kemal (1840–1888)
+  { page: "Hürriyet_Kasidesi", title: "Hürriyet Kasidesi", author: "Namık Kemal" },
+  // Mehmed Akif Ersoy (1873–1936)
+  { page: "Çanakkale_Şehitlerine", title: "Çanakkale Şehitlerine", author: "Mehmed Akif Ersoy" },
 ];
 
 function decodeHtmlEntities(text: string): string {

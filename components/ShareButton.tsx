@@ -36,33 +36,41 @@ function drawAppStoreBadge(
   w: number,
   h: number
 ) {
-  drawRoundedRect(ctx, x, y, w, h, 18);
+  // Badge arka planı (canvas koordinatlarında)
+  drawRoundedRect(ctx, x, y, w, h, h * 0.22);
   ctx.fillStyle = "#1A1A1A";
   ctx.fill();
 
-  const aX = x + 22;
-  const aY = y + h / 2 - 18;
-  ctx.fillStyle = "white";
-  ctx.beginPath();
-  ctx.ellipse(aX + 14, aY + 14, 11, 13, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#1A1A1A";
-  ctx.beginPath();
-  ctx.ellipse(aX + 20, aY + 10, 7, 8, 0.4, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "white";
-  ctx.beginPath();
-  ctx.ellipse(aX + 17, aY + 3, 4, 6, -0.5, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.save();
+  // SVG viewBox (135×40) → badge boyutuna ölçekle
+  ctx.translate(x, y);
+  ctx.scale(w / 135, h / 40);
 
+  // Apple logosu — AppStoreBadge.tsx'deki aynı SVG path
+  ctx.save();
+  ctx.scale(0.65, 0.65);
+  ctx.translate(4, 4);
+  ctx.fillStyle = "white";
+  const applePath = new Path2D(
+    "M17.5 10.8c1.1-1.4 1.9-3.2 1.7-5.1-1.6.1-3.6 1.1-4.7 2.5-1 1.2-1.9 3.1-1.7 4.9 1.8.1 3.6-.9 4.7-2.3z" +
+    "m1.6 2.6c-2.6-.2-4.8 1.5-6 1.5-1.3 0-3.2-1.4-5.3-1.4-2.7 0-5.3 1.6-6.6 4.1-2.9 5-.7 12.3 2 16.4" +
+    " 1.4 2 3 4.2 5.1 4.1 2-.1 2.8-1.3 5.2-1.3s3.1 1.3 5.3 1.3c2.2 0 3.6-2 5-4 1.5-2.2 2.2-4.4 2.2-4.5" +
+    "-.1 0-4.2-1.6-4.3-6.4-.1-4 3.3-5.9 3.4-6-1.9-2.7-4.7-3-5.7-3z"
+  );
+  ctx.fill(applePath);
+  ctx.restore();
+
+  // Metinler (SVG koordinat uzayında: 135×40)
   ctx.fillStyle = "rgba(255,255,255,0.8)";
-  ctx.font = `${h * 0.22}px Arial`;
+  ctx.font = "7px Arial";
   ctx.textAlign = "left";
-  ctx.fillText("Download on the", x + 52, y + h * 0.38);
+  ctx.fillText("Download on the", 38, 13);
 
   ctx.fillStyle = "white";
-  ctx.font = `600 ${h * 0.38}px Arial`;
-  ctx.fillText("App Store", x + 52, y + h * 0.72);
+  ctx.font = "bold 14px Arial";
+  ctx.fillText("App Store", 38, 27);
+
+  ctx.restore();
 }
 
 /** Metni canvas genişliğine göre satırlara böler */

@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { getRandomBook } from "@/data/books";
 import { getPassageFromGutenberg } from "@/lib/gutenberg";
+import { getPassageFromWikisource } from "@/lib/wikisource";
 import PassageViewer from "@/components/PassageViewer";
 import AppStoreBadge from "@/components/AppStoreBadge";
-import turkishPassages from "@/data/turkish-passages.json";
 
 async function getInitialPassage() {
   try {
@@ -15,8 +15,7 @@ async function getInitialPassage() {
       book.category
     );
   } catch {
-    const pool = turkishPassages;
-    return pool[Math.floor(Math.random() * pool.length)];
+    return await getPassageFromWikisource();
   }
 }
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRandomBook, Category } from "@/data/books";
 import { getPassageFromGutenberg, Passage } from "@/lib/gutenberg";
-import turkishPassages from "@/data/turkish-passages.json";
+import { getPassageFromWikisource } from "@/lib/wikisource";
 
 export async function GET(req: NextRequest) {
   const category = req.nextUrl.searchParams.get("category") as Category | null;
@@ -10,8 +10,7 @@ export async function GET(req: NextRequest) {
     let passage: Passage;
 
     if (category === "turkce") {
-      const pool = turkishPassages;
-      passage = pool[Math.floor(Math.random() * pool.length)];
+      passage = await getPassageFromWikisource();
     } else {
       const book = getRandomBook(category ?? undefined);
       passage = await getPassageFromGutenberg(
@@ -25,8 +24,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(passage);
   } catch (err) {
     console.error("Passage fetch error:", err);
-    // Fallback to a random Turkish passage if API fails
-    const fallback = turkishPassages[Math.floor(Math.random() * turkishPassages.length)];
-    return NextResponse.json(fallback);
+    // Wikisource'dan başka bir eser dene
+    try {
+      const fallback = await getPassageFromWikisource();
+      return NextResponse.json(fallback);
+    } catch {
+      return NextResponse.json(
+        { error: "Pasaj alınamadı" },
+        { status: 500 }
+      );
+    }
   }
 }
